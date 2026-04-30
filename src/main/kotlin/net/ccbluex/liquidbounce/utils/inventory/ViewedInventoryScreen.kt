@@ -19,8 +19,13 @@
 package net.ccbluex.liquidbounce.utils.inventory
 
 import com.mojang.blaze3d.opengl.GlStateManager
+import net.ccbluex.liquidbounce.features.command.commands.ingame.creative.CommandItemGive.giveItem
+import net.ccbluex.liquidbounce.lang.translation
 import net.ccbluex.liquidbounce.render.withPush
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.mc
+import net.ccbluex.liquidbounce.utils.client.regular
+import net.ccbluex.liquidbounce.utils.client.variable
 import net.ccbluex.liquidbounce.utils.text.PlainText
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.render.GuiRenderer
@@ -33,6 +38,8 @@ import net.minecraft.world.entity.player.Player
 import net.minecraft.world.inventory.InventoryMenu
 import net.minecraft.world.inventory.Slot
 import net.minecraft.world.item.ItemStack
+import org.lwjgl.glfw.GLFW
+import net.ccbluex.liquidbounce.utils.client.player as localplayer
 
 class ViewedInventoryScreen(private val player: () -> Player?) : Screen(PlainText.EMPTY) {
 
@@ -48,6 +55,7 @@ class ViewedInventoryScreen(private val player: () -> Player?) : Screen(PlainTex
         x = (width - backgroundWidth) / 2
         y = (height - backgroundHeight) / 2
     }
+    private var currentItemStack: ItemStack? = null
 
     override fun extractRenderState(context: GuiGraphicsExtractor, mouseX: Int, mouseY: Int, delta: Float) {
         super.extractRenderState(context, mouseX, mouseY, delta)
@@ -87,6 +95,7 @@ class ViewedInventoryScreen(private val player: () -> Player?) : Screen(PlainTex
 
         if (cursorStack.isEmpty && hoveredSlot != null && hoveredSlot.hasItem()) {
             val hoveredItemStack = hoveredSlot.item
+            currentItemStack = hoveredItemStack
             context.setTooltipForNextFrame(
                 font, getTooltipFromItem(mc, hoveredItemStack),
                 hoveredItemStack.tooltipImage, mouseX, mouseY
@@ -163,6 +172,33 @@ class ViewedInventoryScreen(private val player: () -> Player?) : Screen(PlainTex
 
         if (mc.options.keyInventory.matches(input)) {
             onClose()
+        }
+
+        if (input.key == GLFW.GLFW_KEY_G) {
+            val translationBaseKey = "liquidbounce.command.give.result"
+
+            val itemStack = currentItemStack ?: return true
+            val giveAmount = localplayer.giveItem(itemStack, itemStack.count)
+
+            if (!localplayer.hasInfiniteMaterials()) {
+                chat(translation("$translationBaseKey.mustBeCreative"))
+                return true
+            }
+
+            if (giveAmount == 0) {
+                chat(translation(("$translationBaseKey.noEmptySlot")))
+                return true
+            }
+
+            chat(
+                regular(
+                    translation(
+                        "$translationBaseKey.itemGiven",
+                        itemStack.displayName,
+                        variable(giveAmount.toString())
+                    )
+                )
+            )
         }
 
         return true
