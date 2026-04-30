@@ -123,6 +123,9 @@ object ModuleInventoryTracker : ClientModule("InventoryTracker", ModuleCategorie
         val timeStamp = inventoryMap[player]?.timeMap?.getLong(event.itemStack)?.takeIf { it != 0L } ?: return@handler
         val lastSeen = System.currentTimeMillis() - timeStamp
         event.lore.add(
+            "Press G to give item (creative)".asPlainText(ChatFormatting.YELLOW)
+        )
+        event.lore.add(
             "Last Seen: ${toMinutesSeconds(lastSeen)}".asPlainText(ChatFormatting.GRAY)
         )
     }
