@@ -172,30 +172,7 @@ class ViewedInventoryScreen(private val player: () -> Player?) : Screen(PlainTex
         }
 
         if (input.key == GLFW.GLFW_KEY_G) {
-            val translationBaseKey = "liquidbounce.command.give.result"
-
-            val itemStack = currentItemStack ?: return true
-            val giveAmount = localplayer.giveItem(itemStack, itemStack.count)
-
-            if (!localplayer.hasInfiniteMaterials()) {
-                chat(translation("$translationBaseKey.mustBeCreative"))
-                return true
-            }
-
-            if (giveAmount == 0) {
-                chat(translation(("$translationBaseKey.noEmptySlot")))
-                return true
-            }
-
-            chat(
-                regular(
-                    translation(
-                        "$translationBaseKey.itemGiven",
-                        itemStack.displayName,
-                        variable(giveAmount.toString())
-                    )
-                )
-            )
+            giveItem()
         }
 
         return true
@@ -207,5 +184,32 @@ class ViewedInventoryScreen(private val player: () -> Player?) : Screen(PlainTex
         if (handler == null) {
             onClose()
         }
+    }
+
+    private fun giveItem() {
+        val translationBaseKey = "liquidbounce.command.give.result"
+
+        val itemStack = currentItemStack ?: return
+        val giveAmount = localplayer.giveItem(itemStack, itemStack.count)
+
+        if (!localplayer.hasInfiniteMaterials()) {
+            chat(translation("$translationBaseKey.mustBeCreative"))
+            return
+        }
+
+        if (giveAmount == 0) {
+            chat(translation(("$translationBaseKey.noEmptySlot")))
+            return
+        }
+
+        chat(
+            regular(
+                translation(
+                    "$translationBaseKey.itemGiven",
+                    itemStack.displayName,
+                    variable(giveAmount.toString())
+                )
+            )
+        )
     }
 }
