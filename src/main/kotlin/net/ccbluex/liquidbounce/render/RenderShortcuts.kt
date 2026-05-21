@@ -44,7 +44,6 @@ import net.minecraft.world.phys.Vec3
 import net.minecraft.world.phys.shapes.VoxelShape
 import org.joml.Vector3f
 import org.joml.Vector3fc
-import org.lwjgl.opengl.GL11C
 
 /**
  * This variable should be used when rendering long lines, meaning longer than ~2 in 3d.
@@ -89,7 +88,6 @@ inline fun renderEnvironmentForWorld(
     camera: Camera = mc.gameRenderer.mainCamera,
     draw: WorldRenderEnvironment.() -> Unit,
 ) {
-    GL11C.glEnable(GL11C.GL_LINE_SMOOTH)
     val environment = WorldRenderEnvironment.create(renderTarget, poseStack, camera)
     try {
         when (mode) {
@@ -98,7 +96,6 @@ inline fun renderEnvironmentForWorld(
         }
     } finally {
         environment.flushBatchIfLocalEnvironment()
-        GL11C.glDisable(GL11C.GL_LINE_SMOOTH)
     }
 }
 
@@ -114,30 +111,20 @@ inline fun WorldRenderEnvironment.withPositionRelativeToCamera(draw: WorldRender
  */
 inline fun WorldRenderEnvironment.withPositionRelativeToCamera(pos: Vec3, draw: WorldRenderEnvironment.() -> Unit) {
     poseStack.withPush {
-        translate(relativeToCamera(pos))
+        val cameraPos = camera.position()
+        translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z)
         draw()
     }
 }
 
 /**
- * Shortcut of `withPositionRelativeToCamera(Vec3d.of(pos))`
+ * Shortcut of `withPositionRelativeToCamera(Vec3.atLowerCornerOf(pos))`
  */
 inline fun WorldRenderEnvironment.withPositionRelativeToCamera(pos: Vec3i, draw: WorldRenderEnvironment.() -> Unit) {
     poseStack.withPush {
-        translate(relativeToCamera(pos))
+        val cameraPos = camera.position()
+        translate(pos.x - cameraPos.x, pos.y - cameraPos.y, pos.z - cameraPos.z)
         draw()
-    }
-}
-
-/**
- * Disables [GL11C.GL_LINE_SMOOTH] if [HAS_AMD_VEGA_APU].
- */
-inline fun WorldRenderEnvironment.longLines(draw: WorldRenderEnvironment.() -> Unit) {
-    if (HAS_AMD_VEGA_APU) GL11C.glDisable(GL11C.GL_LINE_SMOOTH)
-    try {
-        draw()
-    } finally {
-        if (HAS_AMD_VEGA_APU) GL11C.glEnable(GL11C.GL_LINE_SMOOTH)
     }
 }
 
@@ -157,7 +144,7 @@ internal inline fun RenderTarget.drawGenericBlockESP(
         pass.bindProjectionUniform()
         pass.bindGlobalsUniform()
         pass.bindDynamicTransformsUniform(dynamicTransforms)
-        renderState.setBaseBlockPosUniform(pass)
+        renderState.bindUniform(pass)
         distanceFade.bindUniform(pass)
         renderState.bindAndDraw(pass)
     }

@@ -34,8 +34,8 @@ import net.ccbluex.liquidbounce.features.module.modules.world.scaffold.ModuleSca
 import net.ccbluex.liquidbounce.features.module.modules.world.scaffold.ScaffoldBlockItemSelection
 import net.ccbluex.liquidbounce.utils.client.Chronometer
 import net.ccbluex.liquidbounce.utils.client.isNewerThanOrEquals1_16
-import net.ccbluex.liquidbounce.utils.client.sendHeldItemChange
-import net.ccbluex.liquidbounce.utils.client.sendSwapItemWithOffhand
+import net.ccbluex.liquidbounce.utils.network.sendHeldItemChange
+import net.ccbluex.liquidbounce.utils.network.sendSwapItemWithOffhand
 import net.ccbluex.liquidbounce.utils.client.usesViaFabricPlus
 import net.ccbluex.liquidbounce.utils.inventory.HotbarItemSlot
 import net.ccbluex.liquidbounce.utils.inventory.InventoryAction
@@ -360,13 +360,13 @@ object ModuleOffhand : ClientModule("Offhand", ModuleCategories.PLAYER, aliases 
                 INVENTORY_HOTBAR_PRIORITY
             }
 
-            var itemSlot = slots.findSlot(item::test)
+            var itemSlot = slots.findSlot(item)
             if (itemSlot == null && fallBackItem != null) {
                 if (fallBackItem.test(player.offhandItem)) {
                     return HotbarItemSlot.OFFHAND
                 }
 
-                itemSlot = slots.findSlot(fallBackItem::test)
+                itemSlot = slots.findSlot(fallBackItem)
             }
 
             return itemSlot

@@ -16,23 +16,27 @@
  * You should have received a copy of the GNU General Public License
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
  */
+package net.ccbluex.liquidbounce.utils.render;
 
-package net.ccbluex.liquidbounce.injection.mixins.minecraft.client;
+public final class FirstPersonShieldTint {
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.ccbluex.liquidbounce.features.module.modules.render.ModuleCustomAmbience;
-import net.minecraft.client.multiplayer.ClientLevel;
-import org.jspecify.annotations.NullMarked;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
+    private static final ThreadLocal<Boolean> RENDERING = ThreadLocal.withInitial(() -> false);
 
-@NullMarked
-@Mixin(ClientLevel.ClientLevelData.class)
-public abstract class MixinClientLevelData {
+    private FirstPersonShieldTint() {
+    }
 
-    @ModifyReturnValue(method = "getGameTime", at = @At("RETURN"))
-    private long injectOverrideTime(long original) {
-        return ModuleCustomAmbience.getTime(original);
+    public static void render(Runnable render) {
+        boolean previous = RENDERING.get();
+        RENDERING.set(true);
+        try {
+            render.run();
+        } finally {
+            RENDERING.set(previous);
+        }
+    }
+
+    public static boolean isRendering() {
+        return RENDERING.get();
     }
 
 }

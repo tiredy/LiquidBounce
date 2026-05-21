@@ -33,9 +33,9 @@ import net.ccbluex.liquidbounce.utils.entity.getEffectiveDamage
 import net.ccbluex.liquidbounce.utils.entity.getExplosionDamageFromEntity
 import net.ccbluex.liquidbounce.utils.entity.isBurrowed
 import net.ccbluex.liquidbounce.utils.entity.isInHole
+import net.ccbluex.liquidbounce.utils.inventory.ArmorItemSlot
 import net.ccbluex.liquidbounce.utils.inventory.InventoryAction
 import net.ccbluex.liquidbounce.utils.inventory.InventoryManager
-import net.ccbluex.liquidbounce.utils.inventory.Slots
 import net.ccbluex.liquidbounce.utils.world.bedRule
 import net.ccbluex.liquidbounce.utils.world.respawnAnchorWorks
 import net.minecraft.core.BlockPos
@@ -146,7 +146,7 @@ internal object Totem : ToggleableValueGroup(ModuleOffhand, "Totem", true) {
                 return true
             }
 
-            if (missingArmor && Slots.Armor.any { it.itemStack.isEmpty }) {
+            if (missingArmor && ArmorItemSlot.entries.any { it.itemStack.isEmpty }) {
                 return true
             }
 
@@ -231,10 +231,10 @@ internal object Totem : ToggleableValueGroup(ModuleOffhand, "Totem", true) {
                 // exclude the block as it gets removed before the explosion happens
                 val exclude = if (noBedExplosion) {
                     // the anchor is just the block itself
-                    arrayOf(pos)
+                    listOf(pos)
                 } else {
                     // a bed consists of two blocks
-                    arrayOf(pos, block.getPotentialSecondBedBlock(state, pos))
+                    listOf(pos, block.getPotentialSecondBedBlock(state, pos))
                 }
 
                 maxDamage = maxDamage.coerceAtLeast(

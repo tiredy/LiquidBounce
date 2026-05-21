@@ -17,22 +17,17 @@
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.ccbluex.liquidbounce.utils.io
+package net.ccbluex.liquidbounce.utils.collection
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.awt.Font
-import java.io.File
-import java.io.InputStream
+/**
+ * @param maxSize Maximum size of the cache. The best values are 2 to the power of [Int] like 64, 128, 256...
+ */
+class LruCache<K, V>(maxSize: Int) : LinkedHashMap<K, V>(maxSize, 1f, true) {
 
-suspend fun File.createFont(fontFormat: Int = Font.TRUETYPE_FONT): Font =
-    withContext(Dispatchers.IO) {
-        Font.createFont(fontFormat, this@createFont)
+    private val removeAt = maxSize - 1
+
+    override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>): Boolean {
+        return size > removeAt
     }
 
-suspend fun InputStream.createFont(fontFormat: Int = Font.TRUETYPE_FONT): Font =
-    withContext(Dispatchers.IO) {
-        this@createFont.use {
-            Font.createFont(fontFormat, it)
-        }
-    }
+}

@@ -16,17 +16,20 @@
  * You should have received a copy of the GNU General Public License
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
  */
-package net.ccbluex.liquidbounce.utils.kotlin
+
+package net.ccbluex.liquidbounce.integration.interop.protocol.rest.v1
+
+import net.ccbluex.netty.http.application.ApplicationCall
+import java.io.InputStream
 
 /**
- * @param maxSize Maximum size of the cache. The best values are 2 to the power of [Int] like 64, 128, 256...
+ * Write all data from [inputStream] and close it
  */
-class LruCache<K, V>(maxSize: Int) : LinkedHashMap<K, V>(maxSize, 1f, true) {
-
-    private val removeAt = maxSize - 1
-
-    override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>): Boolean {
-        return size > removeAt
+suspend fun ApplicationCall.respondInputStream(
+    inputStream: InputStream,
+    contentType: String?,
+) = respondOutputStream(contentType) {
+    inputStream.use {
+        it.transferTo(this)
     }
-
 }

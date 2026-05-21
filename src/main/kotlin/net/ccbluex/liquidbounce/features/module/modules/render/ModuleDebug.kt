@@ -43,7 +43,7 @@ import net.ccbluex.liquidbounce.render.engine.type.Color4b
 import net.ccbluex.liquidbounce.render.renderEnvironmentForWorld
 import net.ccbluex.liquidbounce.utils.text.asPlainText
 import net.ccbluex.liquidbounce.utils.text.textOf
-import net.ccbluex.liquidbounce.utils.client.vector2f
+import net.ccbluex.liquidbounce.utils.math.vector2f
 import net.ccbluex.liquidbounce.utils.entity.PlayerSimulationCache
 import net.ccbluex.liquidbounce.utils.kotlin.EventPriorityConvention.FIRST_PRIORITY
 import net.ccbluex.liquidbounce.utils.math.geometry.Line
@@ -230,21 +230,23 @@ object ModuleDebug : ClientModule("Debug", ModuleCategories.RENDER) {
         }
 
         with(event.context) {
+            val vanillaScale = fontRenderer.scaleToVanillaFont
+
             // Draw
             fontRenderer.draw("Debugging".asPlainText()) {
                 x = 120f
                 y = 22f
                 shadow = true
-                scale = 0.3f
+                scale = vanillaScale * 2
             }
 
             // Draw text line one by one
             textList.forEachIndexed { index, text ->
                 fontRenderer.draw(text) {
                     x = 120f
-                    y = 40 + ((fontRenderer.height * 0.17f) * index)
+                    y = 40 + ((fontRenderer.height * vanillaScale) * index)
                     shadow = true
-                    scale = 0.17f
+                    scale = vanillaScale
                 }
             }
         }

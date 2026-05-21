@@ -34,7 +34,6 @@ import net.ccbluex.liquidbounce.utils.client.isBlocksAttacksExisting
 import net.ccbluex.liquidbounce.utils.client.isOlderThanOrEqual1_8
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.client.player
-import net.ccbluex.liquidbounce.utils.client.toRadians
 import net.ccbluex.liquidbounce.utils.item.getEnchantment
 import net.ccbluex.liquidbounce.utils.item.isSword
 import net.ccbluex.liquidbounce.utils.math.allEmpty
@@ -187,6 +186,9 @@ val ClientInput.initial: Input
 val Player.ping: Int
     get() = mc.connection?.getPlayerInfo(uuid)?.latency ?: 0
 
+val InteractionHand.opposite: InteractionHand
+    get() = if (this === InteractionHand.MAIN_HAND) InteractionHand.OFF_HAND else InteractionHand.MAIN_HAND
+
 fun GameType.shortName(): String = when (this) {
     GameType.SURVIVAL -> "S"
     GameType.CREATIVE -> "C"
@@ -242,10 +244,6 @@ val LivingEntity.isBlockingServerside: Boolean
         return false
     }
 
-inline fun LocalPlayer.setDeltaMovement(block: (Vec3) -> Vec3) {
-    this.deltaMovement = block(this.deltaMovement)
-}
-
 /**
  * @see LocalPlayer.isSlowDueToUsingItem
  */
@@ -269,7 +267,6 @@ fun LocalPlayer.isCloseToEdge(
     distance: Double = 0.1,
     pos: Vec3 = this.position(),
 ): Boolean {
-    val alpha = (getMovementDirectionOfInput(directionalInput) + 90.0F).toRadians()
     val simulatedInput = SimulatedPlayer.SimulatedPlayerInput.fromClientPlayer(directionalInput)
     simulatedInput.set(
         jump = false,
@@ -285,9 +282,10 @@ fun LocalPlayer.isCloseToEdge(
 
     val nextVelocity = simulatedPlayer.deltaMovement
     val direction = if (nextVelocity.horizontalDistanceSqr() > 0.003 * 0.003) {
-        nextVelocity.multiply(1.0, 0.0, 1.0).normalize()
+        nextVelocity.copy(y = 0.0).normalize()
     } else {
-        Vec3(cos(alpha).toDouble(), 0.0, sin(alpha).toDouble())
+        val movementYaw = getMovementDirectionOfInput(directionalInput)
+        Vec3.directionFromRotation(0.0F, movementYaw)
     }
 
     val from = pos.add(0.0, -0.1, 0.0)
@@ -297,7 +295,7 @@ fun LocalPlayer.isCloseToEdge(
         return true
     }
 
-    val playerPosInTwoTicks = simulatedPlayer.pos.add(nextVelocity.multiply(1.0, 0.0, 1.0))
+    val playerPosInTwoTicks = simulatedPlayer.pos.add(nextVelocity.copy(y = 0.0))
 
     return wouldBeCloseToFallOff(pos) || wouldBeCloseToFallOff(playerPosInTwoTicks)
 }
@@ -585,7 +583,7 @@ fun LivingEntity.getDamageFromExplosion(
     power: Float = 6f,
     explosionRange: Float = power * 2f, // allows setting precomputed values
     damageDistance: Float = explosionRange * explosionRange,
-    exclude: Array<BlockPos>? = null,
+    exclude: Collection<BlockPos>? = null,
     include: BlockPos? = null,
     maxBlastResistance: Float? = null,
     entityBoundingBox: AABB? = null,
@@ -633,7 +631,7 @@ fun LivingEntity.getDamageFromExplosion(
 @Suppress("NestedBlockDepth")
 fun LivingEntity.getExposureToExplosion(
     source: Vec3,
-    exclude: Array<BlockPos>?,
+    exclude: Collection<BlockPos>?,
     include: BlockPos?,
     maxBlastResistance: Float?,
     entityBoundingBox: AABB?

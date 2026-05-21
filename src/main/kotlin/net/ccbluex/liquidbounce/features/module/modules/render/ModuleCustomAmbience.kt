@@ -63,7 +63,7 @@ object ModuleCustomAmbience : ClientModule("CustomAmbience", ModuleCategories.RE
         private val cloudEnd by float("CloudEnd", 20480f, 0f..4096f)
 
         /**
-         * @see net.ccbluex.liquidbounce.injection.mixins.minecraft.render.MixinFogRenderer
+         * @see net.ccbluex.liquidbounce.injection.mixins.minecraft.render.fog.MixinFogRenderer
          */
         fun modifyFogData(fogData: FogData) {
             if (!this.running) {
@@ -149,7 +149,7 @@ object ModuleCustomAmbience : ClientModule("CustomAmbience", ModuleCategories.RE
     }
 
     @JvmStatic
-    fun getTime(original: Long): Long {
+    fun getWorldClockTime(original: Long): Long {
         return if (running) {
             when (time.get()) {
                 TimeType.NO_CHANGE -> original

@@ -17,19 +17,25 @@
  * along with LiquidBounce. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package net.ccbluex.liquidbounce.injection.mixins.minecraft.client;
+package net.ccbluex.liquidbounce.utils.collection;
 
-import com.llamalad7.mixinextras.injector.ModifyReturnValue;
-import net.ccbluex.liquidbounce.features.module.modules.render.ModuleCustomAmbience;
-import net.minecraft.world.level.LevelAccessor;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
+import net.ccbluex.fastutil.Pool;
 
-@Mixin(LevelAccessor.class)
-public interface MixinLevelAccessor {
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 
-    @ModifyReturnValue(method = "getGameTime", at = @At("RETURN"))
-    private long injectOverrideTime(long original) {
-        return ModuleCustomAmbience.getTime(original);
+/**
+ * This should only be used in render thread!
+ */
+@SuppressWarnings("rawtypes")
+public final class GenericPools {
+    private GenericPools() {
     }
+
+    public static final Pool<ArrayList> ARRAY_LIST = Pool.create(ArrayList::new, ArrayList::clear);
+
+    public static final Pool<HashMap> HASH_MAP = Pool.create(HashMap::new, HashMap::clear);
+
+    public static final Pool<HashSet> HASH_SET = Pool.create(HashSet::new, HashSet::clear);
 }
